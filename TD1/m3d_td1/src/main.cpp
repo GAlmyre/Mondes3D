@@ -16,7 +16,7 @@ void render(Scene* scene, ImageBlock* result, std::string outputName, bool* done
     float tanfovy2 = tan(camera->fovY()*0.5);
     //Vector3f camX = camera->right() * 0.5 * camera->vpWidth();
     //Vector3f camY = camera->up() * 0.5 * camera->vpHeight();
-    Vector3f camX = camera->right()*tanfovy2*camera->nearDist()*camera->vpWidth()/float(camera->vpHeight());
+    Vector3f camX = camera->right()*tanfovy2*camera->nearDist()*float(camera->vpWidth())/float(camera->vpHeight());
     Vector3f camY = -camera->up()*tanfovy2*camera->nearDist();
     Vector3f camF = camera->direction() * camera->nearDist();
 
@@ -30,10 +30,14 @@ void render(Scene* scene, ImageBlock* result, std::string outputName, bool* done
 			Vector3f v = camF+X+Y;
 			v.normalize();
 			Hit h = Hit();
-			scene->intersect(Ray(camera->position(), v), h);
+      const Ray r =  Ray(camera->position(), v);
+			scene->intersect(r, h);
+
+      // stores the color
+      result->put(Vector2f(i,j), integrator->Li(scene, r));
 		}
 	}
-	
+
 
     /// TODO:
     ///  1. iterate over the image pixels
