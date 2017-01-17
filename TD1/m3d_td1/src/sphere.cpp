@@ -22,7 +22,7 @@ bool Sphere::intersect(const Ray& ray, Hit& hit) const
     // a = ||d||²
     float a = ray.direction.squaredNorm();
     // b = 2*d.(o-c)
-    float b = 2*ray.direction.dot(ray.origin-m_center);
+    float b = (2*ray.direction).dot(ray.origin-m_center);
     // c = ||o-c||²-r²
     float c = (ray.origin-m_center).squaredNorm()-m_radius*m_radius;
     // Delta = b²-4ac
@@ -45,9 +45,11 @@ bool Sphere::intersect(const Ray& ray, Hit& hit) const
 
       if (x1 < x2 && x1 >= 0) {
         hit.setT(x1);
-      } else if (x2 < x1 && x2 >= 0) {
+      }
+      else if (x2 < x1 && x2 >= 0) {
         hit.setT(x2);
-      } else {
+      }
+      else {
         return false;
       }
       return true;

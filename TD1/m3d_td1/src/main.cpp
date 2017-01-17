@@ -20,23 +20,20 @@ void render(Scene* scene, ImageBlock* result, std::string outputName, bool* done
     Vector3f camY = -camera->up()*tanfovy2*camera->nearDist();
     Vector3f camF = camera->direction() * camera->nearDist();
 
-	for (int i = 0; i < camera->vpHeight(); i++)
-	{
-		for (int j = 0; j < camera->vpWidth(); j++)
-		{
-			//Vector3f v = camF + ((-camX + (camX/(camera->vpWidth()/2))*i)+0.5) + ((camY - (camY/(camera->vpHeight()/2))*j)+0.5);
-			Vector3f X = (2*(i+0.5)/camera->vpWidth()-1)*camX;
-			Vector3f Y = (2*(i+0.5)/camera->vpHeight()-1)*camY;
-			Vector3f v = camF+X+Y;
-			v.normalize();
-			Hit h = Hit();
-      const Ray r =  Ray(camera->position(), v);
-			scene->intersect(r, h);
-
-      // stores the color
-      result->put(Vector2f(i,j), integrator->Li(scene, r));
-		}
-	}
+  	for (int i = 0; i < camera->vpHeight(); i++)
+  	{
+  		for (int j = 0; j < camera->vpWidth(); j++)
+  		{
+  			//Vector3f v = camF + ((-camX + (camX/(camera->vpWidth()/2))*i)+0.5) + ((camY - (camY/(camera->vpHeight()/2))*j)+0.5);
+  			Vector3f X = (2*(j+0.5)/camera->vpWidth()-1)*camX;
+  			Vector3f Y = (2*(i+0.5)/camera->vpHeight()-1)*camY;
+  			Vector3f v = camF+X+Y;
+  			v.normalize();
+        const Ray r =  Ray(camera->position(), v);
+        // stores the color
+        result->put(Vector2f(j,i), integrator->Li(scene, r));
+  		}
+  	}
 
 
     /// TODO:

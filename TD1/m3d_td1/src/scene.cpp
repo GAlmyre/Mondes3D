@@ -26,11 +26,13 @@ void Scene::intersect(const Ray& ray, Hit& hit) const
 {
   float t = std::numeric_limits<float>::max();
 
+  Hit h = Hit();
 	for (int i = 0; i < m_shapeList.size(); i++)
 	{
-		m_shapeList[i]->intersect(ray, hit);
-    if (hit.t() < t) {  // if T is now smaller
-      t = hit.t();
+		m_shapeList[i]->intersect(ray, h);
+    if (h.t() < t) {  // if T is now smaller
+      t = h.t();
+      hit.setShape(m_shapeList[i]);
     }
 	}
   hit.setT(t);

@@ -13,7 +13,10 @@ public:
         Hit h = Hit();
         float maxT = h.t();
         scene->intersect(ray, h);
-        if (h.t() < maxT) {
+
+        if (h.shape() == NULL) {
+          return scene->backgroundColor();
+        } else {
           return h.shape()->material()->ambientColor();
         }
         return Color3f(0.f);
