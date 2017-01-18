@@ -6,7 +6,7 @@
  <integrator type="flat" />
 
  <camera type="perspective">
-   <float name="fieldOfView" value="45.0" /> 
+   <float name="fieldOfView" value="45.0" />
    <integer name="width" value="400"/>
    <integer name="height" value="400"/>
    <integer name="samples" value="1"/>

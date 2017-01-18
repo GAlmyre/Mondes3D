@@ -16,8 +16,24 @@ Plane::~Plane()
 
 bool Plane::intersect(const Ray& ray, Hit& hit) const
 {
-    /// TODO
 
+    float num = (m_position - ray.origin).dot(m_normal);
+    float den = ray.direction.dot(m_normal);
+
+    if (den < Epsilon && den > -Epsilon) { // t infinite
+      return false;
+    }
+    if (den == 0) { // t undefined
+      return false;
+    }
+
+    float t = num/den;
+
+    if (t < 0) {  // behind the camera
+      return false;
+    }
+    hit.setShape(this);
+    hit.setT(t);  // we got the plane
     return true;
 }
 

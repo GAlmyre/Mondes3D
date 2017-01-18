@@ -8,18 +8,18 @@ public:
     }
 
     Color3f Li(const Scene *scene, const Ray &ray) const {
-        /** TODO : Find the surface that is visible in the requested direction
-                   Return its ambiant color */
-        Hit h = Hit();
-        float maxT = h.t();
-        scene->intersect(ray, h);
+      
+        Hit *h = new Hit();
+        scene->intersect(ray, *h);
 
-        if (h.shape() == NULL) {
+        if (h->shape() == NULL) {
           return scene->backgroundColor();
-        } else {
-          return h.shape()->material()->ambientColor();
         }
-        return Color3f(0.f);
+        else {
+          return h->shape()->material()->ambientColor();
+        }
+
+        delete h;
     }
 
     std::string toString() const {

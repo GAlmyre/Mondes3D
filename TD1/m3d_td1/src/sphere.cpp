@@ -18,7 +18,7 @@ Sphere::~Sphere()
 
 bool Sphere::intersect(const Ray& ray, Hit& hit) const
 {
-    hit.setShape(this);
+
     // a = ||d||²
     float a = ray.direction.squaredNorm();
     // b = 2*d.(o-c)
@@ -35,6 +35,7 @@ bool Sphere::intersect(const Ray& ray, Hit& hit) const
     else if (delta == 0) { // 1 solution
       if(float x = -b/(2*a) >= 0) {
         hit.setT(x);
+        hit.setShape(this);
         return true;
       }
       return false;
@@ -52,9 +53,9 @@ bool Sphere::intersect(const Ray& ray, Hit& hit) const
       else {
         return false;
       }
+      hit.setShape(this);
       return true;
     }
-    // throw RTException("Sphere::intersect not implemented yet.");
 
     return false;
 }
