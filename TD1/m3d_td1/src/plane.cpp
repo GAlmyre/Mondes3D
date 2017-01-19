@@ -6,7 +6,7 @@ Plane::Plane()
 
 Plane::Plane(const PropertyList &propList)
 {
-    m_position = propList.getPoint("point",Point3f(0,0,0));
+    m_position = propList.getPoint("position",Point3f(0,0,0));
     m_normal = propList.getVector("direction",Point3f(0,0,1));
 }
 
@@ -34,6 +34,7 @@ bool Plane::intersect(const Ray& ray, Hit& hit) const
     }
     hit.setShape(this);
     hit.setT(t);  // we got the plane
+    hit.setNormal(m_normal);
     return true;
 }
 

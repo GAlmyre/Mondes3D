@@ -36,6 +36,7 @@ bool Sphere::intersect(const Ray& ray, Hit& hit) const
       if(float x = -b/(2*a) >= 0) {
         hit.setT(x);
         hit.setShape(this);
+        hit.setNormal(Point3f(ray.at(hit.t())-m_center).normalized());
         return true;
       }
       return false;
@@ -53,6 +54,7 @@ bool Sphere::intersect(const Ray& ray, Hit& hit) const
       else {
         return false;
       }
+      hit.setNormal(Point3f(ray.at(hit.t())-m_center).normalized());
       hit.setShape(this);
       return true;
     }

@@ -1,9 +1,9 @@
 #include "integrator.h"
 #include "scene.h"
 
-class FlatIntegrator : public Integrator {
+class NormalsIntegrator : public Integrator {
 public:
-    FlatIntegrator(const PropertyList &props) {
+    NormalsIntegrator(const PropertyList &props) {
         /* No parameters this time */
     }
 
@@ -16,15 +16,16 @@ public:
           return scene->backgroundColor();
         }
         else {
-          return h->shape()->material()->ambientColor();
+          Normal3f normal = h->normal().cwiseAbs();
+          Color3f color = Color3f(normal[0], normal[1], normal[2]);
+          return color;
         }
-
         delete h;
     }
 
     std::string toString() const {
-        return "FlatIntegrator[]";
+        return "NormalsIntegrator[]";
     }
 };
 
-REGISTER_CLASS(FlatIntegrator, "flat")
+REGISTER_CLASS(NormalsIntegrator, "normals")

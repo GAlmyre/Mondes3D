@@ -4,11 +4,11 @@
   <color name="background" value="0.5, 0.5, 0.5"/>
 
  <!-- Use the flat color integrator -->
- <integrator type="flat"/>
+ <integrator type="normals"/>
 
  <!-- Render the scene as viewed by a perspective camera -->
  <camera type="perspective">
-   <float name="fieldOfView" value="45.0" /> 
+   <float name="fieldOfView" value="45.0" />
    <integer name="width" value="400"/>
    <integer name="height" value="400"/>
    <integer name="samples" value="1"/>
@@ -42,7 +42,7 @@
      <float name="exponent" value="4"/>
    </material>
  </shape>
- 
+
  <shape type="sphere">
    <float name="radius" value="0.2"/>
    <point name="center" value="0.4, -0.6, 0.2"/>

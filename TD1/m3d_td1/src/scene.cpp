@@ -31,6 +31,7 @@ void Scene::intersect(const Ray& ray, Hit& hit) const
     if (m_shapeList[i]->intersect(ray, *h) && (h->t() < hit.t())) {  // if T is now smaller
       hit.setT(h->t());
       hit.setShape(m_shapeList[i]);
+      hit.setNormal(h->normal());
     }
 	}
 
