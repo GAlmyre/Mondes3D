@@ -3,7 +3,7 @@
 
  <color name="background" value="0.2, 0.2, 0.2"/>
 
- <integrator type="flat" />
+ <integrator type="direct" />
 
  <camera type="perspective">
    <float name="fieldOfView" value="45.0" />

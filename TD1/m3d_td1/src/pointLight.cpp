@@ -11,18 +11,12 @@ public:
 
     Vector3f direction(const Point3f& x, float* dist = 0) const
     {
-        /// TODO
-        throw RTException("PointLight::direction not implemented yet.");
-
-        return Vector3f(0.f);
+        return (m_position - x).normalized();
     }
 
     Color3f intensity(const Point3f& x) const
     {
-        /// TODO
-        throw RTException("PointLight::intensity not implemented yet.");
-
-        return Color3f(0.f);
+        return m_intensity/((direction(x, NULL)).squaredNorm());
     }
 
     std::string toString() const {

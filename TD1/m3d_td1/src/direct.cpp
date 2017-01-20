@@ -11,7 +11,7 @@ public:
 
         Hit *h = new Hit();
         scene->intersect(ray, *h);
-        Color3f *color = new Color3f();
+        Color3f color = Color3f();
 
         if (h->shape() == NULL) {
           return scene->backgroundColor();
@@ -19,12 +19,15 @@ public:
         else {
           // for every light, get the color
           for (int i = 0; i < scene->lightList().size(); i++) {
-            float dist;
-            float lightDir = scene->lightList()[i]->direction(ray.at(h->t()), dist);
-            float cosTerm = std::max(lightDir.dot(h->normal()), 0);
-            float ro = h->shape()->material()->brdf(-ray.direction(), lightDir, h->normal(), NULL);
 
-            color += ro*cosTerm*scene->lightList()[i].intensity();
+            Vector3f lightDir = scene->lightList()[i]->direction(ray.at(h->t()));
+            Color3f cosTerm = std::fmaxf(h->normal().dot(lightDir), 0);
+            Color3f ro = h->shape()->material()->brdf(-ray.direction,
+                                                      lightDir,
+                                                      h->normal(),
+                                                      NULL);
+            color += ro*cosTerm*scene->lightList()[i]->intensity(ray.at(h->t()));
+            std::cout << i << std::endl;
           }
         }
         delete h;

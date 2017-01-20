@@ -19,9 +19,8 @@ Phong::Phong(const PropertyList &propList)
 Color3f Phong::brdf(const Vector3f& viewDir, const Vector3f& lightDir, const Normal3f& normal, const Vector2f& uv) const
 {
     Vector3f r = 2*(normal.dot(lightDir))*normal-lightDir;
-    float cosAlpha = viewDir.dot(r);
 
-    Color3f ros = m_specularColor*pow((std::max(r.dot(viewDir),0)),m_reflectivity);
+    Color3f ros = m_specularColor*pow((std::fmaxf(r.dot(viewDir),0)),m_exponent);
     Color3f rod = m_diffuseColor;
 
     Color3f color = ros + rod;
