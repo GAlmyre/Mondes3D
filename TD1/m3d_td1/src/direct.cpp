@@ -10,6 +10,7 @@ public:
     Color3f Li(const Scene *scene, const Ray &ray) const {
 
         Hit *h = new Hit();
+        Hit *shadowHit = new Hit();
         scene->intersect(ray, *h);
         Color3f color = Color3f();
 
@@ -22,15 +23,23 @@ public:
 
             Vector3f lightDir = scene->lightList()[i]->direction(ray.at(h->t()));
             Color3f cosTerm = std::fmaxf(h->normal().dot(lightDir), 0);
-            Color3f ro = h->shape()->material()->brdf(-ray.direction,
-                                                      lightDir,
-                                                      h->normal(),
-                                                      NULL);
-            color += ro*cosTerm*scene->lightList()[i]->intensity(ray.at(h->t()));
-            std::cout << i << std::endl;
+            Color3f ro = h->shape()->material()->brdf(-ray.direction,lightDir,h->normal(),NULL);
+
+            float* dist;
+            // ombre portée
+            Ray shadowRay = Ray(ray.at(h->t())-Epsilon*h->normal(),scene->lightList()[i]->direction(ray.at(h->t()), dist));
+
+            scene->intersect(shadowRay, *shadowHit);
+
+            // if intersection => shadow
+            if (!shadowHit->foundIntersection() && shadowHit->t()<) {
+                color += ro*cosTerm*scene->lightList()[i]->intensity(ray.at(h->t()));
+            }
           }
         }
         delete h;
+        delete shadowHit;
+
         return color;
     }
 
