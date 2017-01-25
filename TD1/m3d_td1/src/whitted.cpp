@@ -1,10 +1,13 @@
 #include "integrator.h"
 #include "scene.h"
 
-class DirectIntegrator : public Integrator {
+class WhittedIntegrator : public Integrator {
 public:
-    DirectIntegrator(const PropertyList &props) {
-        /* No parameters this time */
+
+    int m_maxRecursion;
+
+    WhittedIntegrator(const PropertyList &props) {
+        m_maxRecursion = props.getInteger("m_maxRecursion",4);
     }
 
     Color3f Li(const Scene *scene, const Ray &ray) const {
@@ -37,14 +40,20 @@ public:
           delete shadowHit;
         }
 
+        // reflexion
+        if (h->shape()->reflectivity() > 0 || ray.recursionLevel >= m_maxRecursion) {
+
+          Ray reflectRay = Ray(ray.at(h->t()), );
+        }
+
         delete h;
 
         return color;
     }
 
     std::string toString() const {
-        return "DirectIntegrator[]";
+        return "WhittedIntegrator[]";
     }
 };
 
-REGISTER_CLASS(DirectIntegrator, "direct")
+REGISTER_CLASS(WhittedIntegrator, "whitted")

@@ -11,7 +11,10 @@ public:
 
     Vector3f direction(const Point3f& x, float* dist = 0) const
     {
-        return (m_position - x).normalized();
+        if (dist != NULL) {
+          *dist = (m_position - x).norm();
+        }
+        return (m_position-x).normalized();
     }
 
     Color3f intensity(const Point3f& x) const

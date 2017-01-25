@@ -79,6 +79,7 @@ set(SRCS
     src/flat.cpp
     src/normals.cpp
     src/direct.cpp
+    src/whitted.cpp
 )
 
 add_executable(m3d_raytracer ${SRCS})
