@@ -4,7 +4,8 @@
   <color name="background" value="0.0, 0.0, 0.0"/>
 
  <!-- Use the direct illumination integrator -->
- <integrator type="direct"/>
+ <integrator type="whitted"/>
+    <integer name="maxRecursion" value="4"/>
 
  <!-- Use Whitted integrator -->
  <!--  <integrator type="whitted">
@@ -13,7 +14,7 @@
 
  <!-- Render the scene as viewed by a perspective camera -->
  <camera type="perspective">
-   <float name="fieldOfView" value="45.0" /> 
+   <float name="fieldOfView" value="45.0" />
    <integer name="width" value="400"/>
    <integer name="height" value="400"/>
    <integer name="samples" value="1"/>
@@ -21,7 +22,7 @@
      <rotate value="0, 0, 0, 1"/>
      <translate value="0, -0, 8.0"/>
    </transform>
- </camera> 
+ </camera>
 
  <shape type="sphere">
    <float name="radius" value="0.9"/>
@@ -66,7 +67,7 @@
    </material>
    <point name="center" value="-2.0, 0.0, 0.0"/>
  </shape>
- 
+
  <shape type="sphere">
    <float name="radius" value="0.9"/>
    <material type="phong">

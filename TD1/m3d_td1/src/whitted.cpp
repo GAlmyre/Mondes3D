@@ -19,6 +19,10 @@ public:
         if (!h->foundIntersection()) {
           return scene->backgroundColor();
         }
+        if (ray.recursionLevel >= m_maxRecursion) {
+          return color;
+        }
+
         const LightList &list = scene->lightList();
 
         // for every light, get the color
@@ -37,14 +41,17 @@ public:
           if (!shadowHit->foundIntersection() || shadowHit->t() > dist) {
               color += ro*cosTerm*(*it)->intensity(ray.at(h->t()));
           }
+
           delete shadowHit;
         }
 
-        // reflexion
-        if (h->shape()->reflectivity() > 0 || ray.recursionLevel >= m_maxRecursion) {
+        //reflexion
 
-          Ray reflectRay = Ray(ray.at(h->t()), );
-        }
+        Vector3f reflexDir = (ray.direction - 2*ray.direction.dot(h->normal())*h->normal()).normalized();
+        Ray reflexRay(ray.at(h->t())+h->normal()*Epsilon, reflexDir);
+        reflexRay.recursionLevel = ray.recursionLevel+1;
+        float cosTerm = std::max(reflexDir.dot(h->normal()), 0.f);
+        color += Li(scene, reflexRay)*cosTerm*h->shape()->material()->reflectivity();
 
         delete h;
 
