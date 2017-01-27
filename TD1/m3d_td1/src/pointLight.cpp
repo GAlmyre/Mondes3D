@@ -19,7 +19,7 @@ public:
 
     Color3f intensity(const Point3f& x) const
     {
-        return m_intensity/((direction(x, NULL)).squaredNorm());
+        return m_intensity/((m_position-x)).squaredNorm();
     }
 
     std::string toString() const {

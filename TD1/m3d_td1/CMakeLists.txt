@@ -57,6 +57,8 @@ set(SRCS
     include/proplist.h
     include/transform.h
     include/integrator.h
+    include/bvh.h
+    include/mesh.h
 
     src/common.cpp
     src/block.cpp
@@ -80,6 +82,8 @@ set(SRCS
     src/normals.cpp
     src/direct.cpp
     src/whitted.cpp
+    src/bvh.cpp
+    src/mesh.cpp
 )
 
 add_executable(m3d_raytracer ${SRCS})

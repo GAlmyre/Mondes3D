@@ -7,7 +7,7 @@ public:
     int m_maxRecursion;
 
     WhittedIntegrator(const PropertyList &props) {
-        m_maxRecursion = props.getInteger("m_maxRecursion",4);
+        m_maxRecursion = props.getInteger("maxRecursion",4);
     }
 
     Color3f Li(const Scene *scene, const Ray &ray) const {
