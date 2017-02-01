@@ -85,6 +85,9 @@ void BVH::buildNode(int nodeId, int start, int end, int level, int targetCellSiz
 
     // étape 1 : calculer la boite englobante des faces indexées de mFaces[start] à mFaces[end]
     // (Utiliser la fonction extend de Eigen::AlignedBox3f et la fonction mpMesh->vertexOfFace(int) pour obtenir les coordonnées des sommets des faces)
+    for (int i = start; i < end; i++) {
+      node.extend(m_pMesh->vertexOfFace(i));
+    }
 
     // étape 2 : déterminer si il s'agit d'une feuille (appliquer les critères d'arrêts)
 
