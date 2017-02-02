@@ -32,7 +32,6 @@ void BVH::build(const Mesh* pMesh, int targetCellSize, int maxDepth)
             m_centroids[i] = (m_pMesh->vertexOfFace(i, 0).position + m_pMesh->vertexOfFace(i, 1).position + m_pMesh->vertexOfFace(i, 2).position)/3.f;
             m_faces[i] = i;
         }
-
         // recursively build the BVH, starting from the root node and the entire list of faces
         buildNode(0, 0, m_pMesh->nbFaces(), 0, targetCellSize, maxDepth);
     }
@@ -43,20 +42,41 @@ bool BVH::intersect(const Ray& ray, Hit& hit) const
     // compute the intersection with the root node
     float tMin, tMax;
     Normal3f n;
-    ::intersect(ray, m_nodes[0].box, tMin, tMax, n);
 
-    // TODO
-    // vérifier si on a bien une intersection (en fonction de tMin, tMax, et hit.t()), et si oui appeler intersecNode...
-
+    if (::intersect(ray, m_nodes[0].box, tMin, tMax, n) && tMax >0 && tMin < hit.t()) {
+      return intersectNode(0, ray, hit);
+    }
     return false;
 }
 
 bool BVH::intersectNode(int nodeId, const Ray& ray, Hit& hit) const
 {
-    // TODO, deux cas: soit mNodes[nodeId] est une feuille (il faut alors intersecter les triangles du noeud),
-    // soit c'est un noeud interne (il faut visiter les fils (ou pas))
+    Node node = m_nodes[nodeId];
+    bool ret = false;
 
-    return false;
+    if (node.is_leaf) {
+      for (int i = node.first_face_id; i < node.first_face_id+node.nb_faces; i++) {
+        if(m_pMesh->intersectFace(ray, hit, m_faces[i])) {
+          return true;
+        }
+      }
+    }
+    else {
+      float tMin, tMax;
+      Normal3f n;
+
+      int left = node.first_child_id;
+      int right = left+1;
+      if (::intersect(ray, m_nodes[left].box, tMin, tMax, n) && tMin < hit.t() && tMax>0) {
+        if(intersectNode(left, ray, hit))
+          ret = true;
+      }
+      if (::intersect(ray, m_nodes[right].box, tMin, tMax, n) && tMin < hit.t() && tMax>0) {
+        if(intersectNode(right, ray, hit))
+          ret = true;
+      }
+    }
+    return ret;
 }
 
 /** Sorts the faces with respect to their centroid along the dimension \a dim and spliting value \a split_value.
@@ -82,23 +102,51 @@ int BVH::split(int start, int end, int dim, float split_value)
 void BVH::buildNode(int nodeId, int start, int end, int level, int targetCellSize, int maxDepth)
 {
     Node& node = m_nodes[nodeId];
+    node.nb_faces = end-start;
 
     // étape 1 : calculer la boite englobante des faces indexées de mFaces[start] à mFaces[end]
     // (Utiliser la fonction extend de Eigen::AlignedBox3f et la fonction mpMesh->vertexOfFace(int) pour obtenir les coordonnées des sommets des faces)
     for (int i = start; i < end; i++) {
-      node.extend(m_pMesh->vertexOfFace(i));
+      for (int j = 0; j < 3; j++) {
+        node.box.extend(m_pMesh->vertexOfFace(m_faces[i], j).position);
+      }
     }
 
     // étape 2 : déterminer si il s'agit d'une feuille (appliquer les critères d'arrêts)
+    if (level == maxDepth ||  node.nb_faces < targetCellSize) {
+      // Si c'est une feuille, finaliser le noeud et quitter la fonction
+      node.is_leaf = true;
+      node.first_face_id = start;
+    }
+    else {
+      // Si c'est un noeud interne :
+      // étape 3 : calculer l'index de la dimension (x=0, y=1, ou z=2) et la valeur du plan de coupe
+      // (on découpe au milieu de la boite selon la plus grande dimension)
+      Vector3f size = node.box.sizes();
+      int dim;
+      float splitValue;
 
-    // Si c'est une feuille, finaliser le noeud et quitter la fonction
+      if (size(0) > size(1) && size(0) > size(2)) { // size 0
+        dim = 0;
+      }
+      else if (size(1) > size(0) && size(1) > size(2)) { // size 1
+        dim = 1;
+      }
+      else { // size 2
+        dim = 2;
+      }
+      splitValue = (size(dim)/2)+node.box.min()(dim);
 
-    // Si c'est un noeud interne :
+      // étape 4 : appeler la fonction split pour trier (partiellement) les faces
+      int mid = split(start, end, dim, splitValue);
 
-    // étape 3 : calculer l'index de la dimension (x=0, y=1, ou y=2) et la valeur du plan de coupe
-    // (on découpe au milieu de la boite selon la plus grande dimension)
-
-    // étape 4 : appeler la fonction split pour trier (partiellement) les faces
-
-    // étape 5 : allouer les fils, et les construire en appelant buildNode...
+      // étape 5 : allouer les fils, et les construire en appelant buildNode...
+      Node left, right;
+      int id = m_nodes.size();
+      node.first_child_id = id;
+      m_nodes.push_back(left);
+      m_nodes.push_back(right);
+      buildNode(id, start, mid, level+1, targetCellSize, maxDepth);
+      buildNode(id+1, mid, end, level+1, targetCellSize, maxDepth);
+    }
 }

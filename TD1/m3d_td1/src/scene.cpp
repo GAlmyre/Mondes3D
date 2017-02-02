@@ -24,18 +24,10 @@ void Scene::clear()
 /** Search for the nearest intersection between the ray and the object list */
 void Scene::intersect(const Ray& ray, Hit& hit) const
 {
-
-  Hit *h = new Hit();
 	for (int i = 0; i < m_shapeList.size(); i++)
 	{
-    if (m_shapeList[i]->intersect(ray, *h) && (h->t() < hit.t())) {  // if T is now smaller
-      hit.setT(h->t());
-      hit.setShape(m_shapeList[i]);
-      hit.setNormal(h->normal());
-    }
+    m_shapeList[i]->intersect(ray, hit);
 	}
-
-  delete h;
 }
 
 void Scene::addChild(Object *obj) {

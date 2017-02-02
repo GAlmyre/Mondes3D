@@ -18,7 +18,7 @@ Sphere::~Sphere()
 
 bool Sphere::intersect(const Ray& ray, Hit& hit) const
 {
-
+    bool ret = false;
     // a = ||d||²
     float a = ray.direction.squaredNorm();
     // b = 2*d.(o-c)
@@ -27,17 +27,15 @@ bool Sphere::intersect(const Ray& ray, Hit& hit) const
     float c = (ray.origin-m_center).squaredNorm()-m_radius*m_radius;
     // Delta = b²-4ac
     float delta = b*b-4*a*c;
-
+    float t;
     // Solutions
     if (delta < 0) { // no solution
       return false;
     }
     else if (delta == 0) { // 1 solution
       if(float x = -b/(2*a) >= 0) {
-        hit.setT(x);
-        hit.setShape(this);
-        hit.setNormal(Point3f(ray.at(hit.t())-m_center).normalized());
-        return true;
+        t = x;
+        ret = true;
       }
       return false;
     }
@@ -45,15 +43,28 @@ bool Sphere::intersect(const Ray& ray, Hit& hit) const
       float x1 = (-b-sqrt(delta))/(2*a);
       float x2 = (-b+sqrt(delta))/(2*a);
 
-      if (x1 < x2 && x1 >= 0) {
-        hit.setT(x1);
+      if (x1 < x2) {
+        if (x1 >= 0) {
+          t = x1;
+          ret = true;
+        }
+        else if (x2 >= 0) {
+          t = x2;
+          ret = true;
+        }
       }
-      else if (x2 < x1 && x2 >= 0) {
-        hit.setT(x2);
-      }
-      else {
-        return false;
-      }
+      else
+        if (x2 >= 0) {
+          t = x2;
+          ret = true;
+        }
+        else if (x1 >= 0) {
+          t = x1;
+          ret = true;
+        }
+    }
+    if (ret && t < hit.t()) {
+      hit.setT(t);
       hit.setNormal(Point3f(ray.at(hit.t())-m_center).normalized());
       hit.setShape(this);
       return true;

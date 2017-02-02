@@ -32,7 +32,7 @@ public:
       Normal3f normal;
       Vector2f texcoord;
     };
-  
+
     Mesh() : m_isInitialized(false) {}
 
     Mesh(const PropertyList &propList);
@@ -50,9 +50,9 @@ public:
 
     /** Loads a triangular mesh in the 3DS format */
     void load3DS(const std::string& filename);
-    
-    void loadRawData(float* positions, int nbVertices, int* indices, int nbTriangles); 
-    
+
+    void loadRawData(float* positions, int nbVertices, int* indices, int nbTriangles);
+
     virtual bool intersect(const Ray& ray, Hit& hit) const;
 
     /** compute the intersection between a ray and a given triangular face */
@@ -74,7 +74,7 @@ public:
     std::string toString() const;
 
     BVH* bvh() { return m_BVH; }
-    
+
 protected:
 
     /** Represent a triangular face via its 3 vertex indices. */
@@ -93,7 +93,7 @@ protected:
 
     /** The bounding box of the mesh */
     Eigen::AlignedBox3f m_AABB;
-    
+
     mutable unsigned int m_vertexBufferId; ///< the id of the BufferObject storing the vertex attributes
     mutable unsigned int m_indexBufferId;  ///< the id of the BufferObject storing the faces indices
     mutable unsigned int m_vertexArrayId;  ///< the id of the VertexArray object

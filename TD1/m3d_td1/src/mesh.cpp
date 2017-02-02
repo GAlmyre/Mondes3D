@@ -15,7 +15,7 @@ Mesh::Mesh(const PropertyList &propList)
 {
     std::string filename = propList.getString("filename");
     loadFromFile(filename);
-    // buildBVH();
+    buildBVH();
 }
 
 void Mesh::loadFromFile(const std::string& filename)
@@ -270,9 +270,10 @@ bool Mesh::intersectFace(const Ray& ray, Hit& hit, int faceId) const
 
     Vector3f intersection = (1./(P.dot(e1)))*Vector3f(Q.dot(e2), P.dot(T), Q.dot(ray.direction));
 
-    if (intersection(0) > 0 && intersection(1) > 0 && intersection(2) > 0 && intersection(1)+intersection(2) < 1) {
+    if (intersection(0) > 0 && intersection(1) > 0 && intersection(2) > 0
+    && intersection(1)+intersection(2) < 1 && intersection(0) < hit.t()) {
       hit.setT(intersection[0]);
-      //hit.setNormal((e1.cross(e2)).normalized());
+      hit.setShape(this);
       hit.setNormal((intersection(1)*Av.normal) + (intersection(2)*Bv.normal) +
       (1 - intersection(1) - intersection(2))*Cv.normal);
       ms_itersection_count++;
@@ -285,37 +286,23 @@ bool Mesh::intersectFace(const Ray& ray, Hit& hit, int faceId) const
 bool Mesh::intersect(const Ray& ray, Hit& hit) const
 {
     float tMin, tMax;
-    // temp
-    float t;
     bool inter = false;
     Normal3f normal;
-    if( (!::intersect(ray, m_AABB, tMin, tMax, normal)) || tMin>hit.t())
-        return false;
 
-    //hit.setT(tMin);
-    //hit.setNormal(normal);
-    //hit.setShape(this);
 
-    t = tMax;
-
-    for (int i = 0; i < m_faces.size(); i++) {
-      Hit h = Hit();
-      intersectFace(ray, h, i);
-
-      if (h.t() < t) {
-        t = h.t();
-        normal = h.normal();
-        inter = true;
+    if (m_BVH != NULL) {
+      return m_BVH->intersect(ray, hit);
+    }
+    else {
+      if(!::intersect(ray, m_AABB, tMin, tMax, normal) || tMin>hit.t())
+          return false;
+      for (int i = 0; i < m_faces.size(); i++) {
+        if (intersectFace(ray, hit, i)) {
+          inter = true;
+        }
       }
     }
-
-    if (inter) {
-      hit.setT(t);
-      hit.setNormal(normal);
-      hit.setShape(this);
-      return true;
-    }
-    return false;
+    return inter;
 }
 
 std::string Mesh::toString() const {
