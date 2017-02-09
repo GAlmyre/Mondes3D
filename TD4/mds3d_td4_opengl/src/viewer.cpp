@@ -4,7 +4,7 @@
 using namespace Eigen;
 
 Viewer::Viewer()
-  : _winWidth(0), _winHeight(0), zoom(1), lines(-1)
+  : _winWidth(0), _winHeight(0), zoom(1), lines(-1), mvtVect(0,0)
 {
 }
 
@@ -32,7 +32,7 @@ void Viewer::init(int w, int h){
 void Viewer::reshape(int w, int h){
     _winWidth = w;
     _winHeight = h;
-    _cam.setViewport(w,h);
+    _cam.setViewport(w/2,h);
 }
 
 
@@ -41,6 +41,7 @@ void Viewer::reshape(int w, int h){
  */
 void Viewer::drawScene()
 {
+
   glViewport(0, 0, _winWidth, _winHeight);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -48,6 +49,7 @@ void Viewer::drawScene()
   _shader.activate();
   glUniform1f(_shader.getUniformLocation("zoom"), zoom);
   glUniform1f(_shader.getUniformLocation("color"), color);
+  glUniform2fv(_shader.getUniformLocation("mvtVect"), 1, mvtVect.data());
   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
   _mesh.draw(_shader);
 
@@ -58,6 +60,9 @@ void Viewer::drawScene()
     _mesh.draw(_shader);
     _shader.deactivate();
   }
+
+//  glViewport(_winWidth/2, 0, _winWidth/2, _winHeight);
+
 }
 
 
@@ -92,15 +97,19 @@ void Viewer::keyPressed(int key, int action, int /*mods*/)
   {
     if (key==GLFW_KEY_UP)
     {
+      mvtVect(1)+=0.1;
     }
     else if (key==GLFW_KEY_DOWN)
     {
+      mvtVect(1)-=0.1;
     }
     else if (key==GLFW_KEY_LEFT)
     {
+      mvtVect(0)-=0.1;
     }
     else if (key==GLFW_KEY_RIGHT)
     {
+      mvtVect(0)+=0.1;
     }
     else if (key==GLFW_KEY_PAGE_UP)
     {

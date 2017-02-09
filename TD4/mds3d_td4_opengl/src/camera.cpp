@@ -13,7 +13,6 @@ Camera::Camera()
 void Camera::lookAt(const Vector3f& position, const Vector3f& target, const Vector3f& up)
 {
   mTarget = target;
-
   // TODO
 }
 

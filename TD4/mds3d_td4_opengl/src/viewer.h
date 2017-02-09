@@ -37,6 +37,7 @@ private:
     Mesh   _mesh;
     float zoom;
     float lines;
+    Eigen::Vector2f mvtVect;
 
     // Mouse parameters for the trackball
     enum TrackMode
