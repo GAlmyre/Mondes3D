@@ -42,7 +42,7 @@ void Viewer::reshape(int w, int h){
 void Viewer::drawScene()
 {
 
-  glViewport(0, 0, _winWidth, _winHeight);
+  glViewport(0, 0, _winWidth/2, _winHeight);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   int color = 1;
@@ -61,7 +61,24 @@ void Viewer::drawScene()
     _shader.deactivate();
   }
 
-//  glViewport(_winWidth/2, 0, _winWidth/2, _winHeight);
+  glViewport(_winWidth/2, 0, _winWidth/2, _winHeight);
+
+  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  color = 1;
+  _shader.activate();
+  glUniform1f(_shader.getUniformLocation("zoom"), zoom);
+  glUniform1f(_shader.getUniformLocation("color"), color);
+  glUniform2fv(_shader.getUniformLocation("mvtVect"), 1, mvtVect.data());
+  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+  _mesh.draw(_shader);
+
+  if (lines > 0) {
+    color = 2;
+    glUniform1f(_shader.getUniformLocation("color"), color);
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+    _mesh.draw(_shader);
+    _shader.deactivate();
+  }
 
 }
 
