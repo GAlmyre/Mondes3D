@@ -17,19 +17,19 @@ class Camera
     void setPerspective(float fovY, float near, float far);
 
     void zoom(float x);
-    
+
     void rotateAroundTarget(float angle, Eigen::Vector3f axis);
-    
+
     /** Returns the affine transformation matrix from the global space to the camera space */
     const Eigen::Matrix4f& viewMatrix() const;
     /** Returns the perspective projection matrix */
     Eigen::Matrix4f projectionMatrix() const;
-    
+
     void setViewport(int width, int height);
-    
+
     int vpWidth() const { return mVpWidth; }
     int vpHeight() const { return mVpHeight; }
-    
+
   protected:
 
     Eigen::Matrix4f mViewMatrix;

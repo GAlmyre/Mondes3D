@@ -6,6 +6,7 @@ using namespace Eigen;
 Viewer::Viewer()
   : _winWidth(0), _winHeight(0), zoom(1), lines(-1), mvtVect(0,0)
 {
+  _transformMatrix.setIdentity();
 }
 
 Viewer::~Viewer()
@@ -22,19 +23,20 @@ void Viewer::init(int w, int h){
     glClearColor(0.4, 0.4, 0.4, 1);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
-    if(!_mesh.load(DATA_DIR"/models/lemming.off")) exit(1);
+    if(!_mesh.load(DATA_DIR"/models/sphere.obj")) exit(1);
     _mesh.initVBA();
 
     reshape(w,h);
     _trackball.setCamera(&_cam);
+
+    _cam.lookAt(Vector3f(0,0,-5),Vector3f(0,0,0),Vector3f(0,1,0));
 }
 
 void Viewer::reshape(int w, int h){
     _winWidth = w;
     _winHeight = h;
-    _cam.setViewport(w/2,h);
+    _cam.setViewport(w,h);
 }
-
 
 /*!
    callback to draw graphic primitives
@@ -42,50 +44,88 @@ void Viewer::reshape(int w, int h){
 void Viewer::drawScene()
 {
 
-  glViewport(0, 0, _winWidth/2, _winHeight);
+  glViewport(0, 0, _winWidth, _winHeight);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  Matrix4f projectionMatrix = _cam.projectionMatrix();
   int color = 1;
   _shader.activate();
-  glUniform1f(_shader.getUniformLocation("zoom"), zoom);
+  // glUniform1f(_shader.getUniformLocation("zoom"), zoom);
   glUniform1f(_shader.getUniformLocation("color"), color);
-  glUniform2fv(_shader.getUniformLocation("mvtVect"), 1, mvtVect.data());
+  // glUniform2fv(_shader.getUniformLocation("mvtVect"), 1, mvtVect.data());
+  glUniformMatrix4fv(_shader.getUniformLocation("viewMatrix"), 1, GL_FALSE, _cam.viewMatrix().data());
+  glUniformMatrix4fv(_shader.getUniformLocation("projectionMatrix"), 1, GL_FALSE, projectionMatrix.data());
+  glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, _transformMatrix.data());
   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
   _mesh.draw(_shader);
 
-  if (lines > 0) {
-    color = 2;
-    glUniform1f(_shader.getUniformLocation("color"), color);
-    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-    _mesh.draw(_shader);
-    _shader.deactivate();
-  }
-
-  glViewport(_winWidth/2, 0, _winWidth/2, _winHeight);
-
-  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  color = 1;
-  _shader.activate();
-  glUniform1f(_shader.getUniformLocation("zoom"), zoom);
-  glUniform1f(_shader.getUniformLocation("color"), color);
-  glUniform2fv(_shader.getUniformLocation("mvtVect"), 1, mvtVect.data());
-  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-  _mesh.draw(_shader);
-
-  if (lines > 0) {
-    color = 2;
-    glUniform1f(_shader.getUniformLocation("color"), color);
-    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-    _mesh.draw(_shader);
-    _shader.deactivate();
-  }
+  // if (lines > 0) {
+  //   color = 2;
+  //   glUniform1f(_shader.getUniformLocation("color"), color);
+  //   glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+  //   _mesh.draw(_shader);
+  //   _shader.deactivate();
+  // }
+  _shader.deactivate();
+  // glViewport(_winWidth/2, 0, _winWidth/2, _winHeight);
+  //
+  // color = 1;
+  // _shader.activate();
+  // glUniform1f(_shader.getUniformLocation("zoom"), zoom);
+  // glUniform1f(_shader.getUniformLocation("color"), color);
+  // glUniform2fv(_shader.getUniformLocation("mvtVect"), 1, mvtVect.data());
+  // glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+  // _mesh.draw(_shader);
+  //
+  // if (lines > 0) {
+  //   color = 2;
+  //   glUniform1f(_shader.getUniformLocation("color"), color);
+  //   glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+  //   _mesh.draw(_shader);
+  //   _shader.deactivate();
+  // }
 
 }
 
+void Viewer::drawScene2D()
+{
+    glViewport(0, 0, _winWidth, _winHeight);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    _shader.activate();
+
+    Affine3f A;
+    A = Translation3f(Vector3f(-0.6,-1,0));
+    Matrix4f M;
+    M <<  0.5, 0, 0, 0,
+          0, 0.5, 0, 0,
+          0, 0, 0.5, 0,
+          0, 0, 0, 1;
+
+    M = A*M;
+
+    Affine3f A2;
+    A2 = Translation3f(Vector3f(0.6,-1,0));
+    Matrix4f M2;
+    M2 <<  -0.5, 0, 0, 0,
+          0, 0.5, 0, 0,
+          0, 0, 0.5, 0,
+          0, 0, 0, 1;
+
+    M2 = A2*M2;
+
+    glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, M.data());
+    _mesh.draw(_shader);
+    glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, M2.data());
+    _mesh.draw(_shader);
+    glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, _transformMatrix.data());
+    _mesh.draw(_shader);
+    _shader.deactivate();
+}
 
 void Viewer::updateAndDrawScene()
 {
     drawScene();
+    //drawScene2D();
 }
 
 void Viewer::loadShaders()
@@ -112,34 +152,55 @@ void Viewer::keyPressed(int key, int action, int /*mods*/)
 
   if(action == GLFW_PRESS || action == GLFW_REPEAT )
   {
+    Affine3f A;
     if (key==GLFW_KEY_UP)
     {
-      mvtVect(1)+=0.1;
+      // A = Translation3f(Vector3f(0,0.1,0));
+      // _transformMatrix=A.matrix()*_transformMatrix;
     }
     else if (key==GLFW_KEY_DOWN)
     {
-      mvtVect(1)-=0.1;
+      // A = Translation3f(Vector3f(0,-0.1,0));
+      // _transformMatrix=A.matrix()*_transformMatrix;
     }
     else if (key==GLFW_KEY_LEFT)
     {
-      mvtVect(0)-=0.1;
+      // A = Translation3f(Vector3f(0,0.5,0))*AngleAxisf(0.1,Vector3f(0,0,1))*Translation3f(Vector3f(0,-0.5,0));
+      // A = Translation3f(Vector3f(-0.1,0,0));
+      A = AngleAxisf(0.1,Vector3f(0,-1,0));
+      _transformMatrix=A.matrix()*_transformMatrix;
     }
     else if (key==GLFW_KEY_RIGHT)
     {
-      mvtVect(0)+=0.1;
+      // A = Translation3f(Vector3f(0,0.5,0))*AngleAxisf(0.1,Vector3f(0,0,-1))*Translation3f(Vector3f(0,-0.5,0));
+      // A = Translation3f(Vector3f(0.1,0,0));
+      A = AngleAxisf(0.1,Vector3f(0,1,0));
+      _transformMatrix=A.matrix()*_transformMatrix;
     }
     else if (key==GLFW_KEY_PAGE_UP)
     {
-      zoom+=0.1;
+      // Matrix4f M;
+      // M <<  1.1, 0, 0, 0,
+      // 0, 1.1, 0, 0,
+      // 0, 0, 1.1, 0,
+      // 0, 0, 0, 1;
+      // _transformMatrix=_transformMatrix*M;
     }
     else if (key==GLFW_KEY_PAGE_DOWN)
     {
-      zoom-=0.1;
+      // Matrix4f M;
+      // M <<  0.9, 0, 0, 0,
+      // 0, 0.9, 0, 0,
+      // 0, 0, 0.9, 0,
+      // 0, 0, 0, 1;
+      //
+      // _transformMatrix=_transformMatrix*M;
     }
     if (key==GLFW_KEY_L)
     {
-      lines = -lines;
+      // lines = -lines;
     }
+
   }
 }
 

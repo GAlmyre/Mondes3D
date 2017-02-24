@@ -1,4 +1,3 @@
-
 #include "camera.h"
 
 using namespace Eigen;
@@ -13,7 +12,15 @@ Camera::Camera()
 void Camera::lookAt(const Vector3f& position, const Vector3f& target, const Vector3f& up)
 {
   mTarget = target;
-  // TODO
+  Matrix3f tmp;
+  Vector3f z = (position-target).normalized();
+  Vector3f x = (z.cross(up)).normalized();
+  Vector3f y = (x.cross(z)).normalized();
+
+  mViewMatrix.row(0) = Vector4f(x(0),x(1),x(2),-x.transpose()*position);
+  mViewMatrix.row(1) = Vector4f(y(0),y(1),y(2),-y.transpose()*position);
+  mViewMatrix.row(2) = Vector4f(z(0),z(1),z(2),-z.transpose()*position);
+  mViewMatrix.row(3) = Vector4f(0,0,0,1);
 }
 
 void Camera::setPerspective(float fovY, float near, float far)
@@ -37,7 +44,7 @@ void Camera::zoom(float x)
 
 void Camera::rotateAroundTarget(float angle, Vector3f axis)
 {
-  // TODO
+  
 }
 
 Camera::~Camera()

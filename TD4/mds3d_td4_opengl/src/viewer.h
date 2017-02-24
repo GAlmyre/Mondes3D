@@ -18,6 +18,7 @@ public:
     // gl stuff
     void init(int w, int h);
     void drawScene();
+    void drawScene2D();
     void updateAndDrawScene();
     void reshape(int w, int h);
     void loadShaders();
@@ -35,6 +36,7 @@ private:
     Camera _cam;
     Shader _shader;
     Mesh   _mesh;
+    Eigen::Matrix4f _transformMatrix;
     float zoom;
     float lines;
     Eigen::Vector2f mvtVect;
