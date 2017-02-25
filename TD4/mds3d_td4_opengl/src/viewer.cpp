@@ -20,7 +20,7 @@ Viewer::~Viewer()
 void Viewer::init(int w, int h){
 
     loadShaders();
-    glClearColor(0.4, 0.4, 0.4, 1);
+    glClearColor(0, 0, 0, 1);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     if(!_mesh.load(DATA_DIR"/models/sphere.obj")) exit(1);
@@ -28,6 +28,17 @@ void Viewer::init(int w, int h){
 
     reshape(w,h);
     _trackball.setCamera(&_cam);
+
+    // earth init
+    Affine3f affine;
+    affine = Translation3f(Vector3f(2.5,0,0))*Scaling(Vector3f(0.5,0.5,0.5));
+    _earthTransformMatrix.setIdentity();
+    _earthTransformMatrix = _earthTransformMatrix*affine.matrix();
+
+    // moon init
+    affine = Translation3f(Vector3f(1.8,0,0))*Scaling(Vector3f(0.1,0.1,0.1));
+    _moonTransformMatrix.setIdentity();
+    _moonTransformMatrix = _moonTransformMatrix*affine.matrix();
 
     _cam.lookAt(Vector3f(0,0,-5),Vector3f(0,0,0),Vector3f(0,1,0));
 }
@@ -50,40 +61,53 @@ void Viewer::drawScene()
   Matrix4f projectionMatrix = _cam.projectionMatrix();
   int color = 1;
   _shader.activate();
-  // glUniform1f(_shader.getUniformLocation("zoom"), zoom);
+
+  // earth rotation
+  Affine3f earthAffine;
+  Vector3f t = Affine3f(_earthTransformMatrix) * Vector3f(0,0,0);
+  earthAffine = AngleAxisf(0.02, Vector3f(0,1,0))
+                *Translation3f(t)
+                *AngleAxisf(0.2, Vector3f(0,sin(23.44),0))
+                *Translation3f(-t);
+  _earthTransformMatrix = earthAffine.matrix()*_earthTransformMatrix;
+
+  // moon rotation
+  Affine3f moonAffine;
+  Vector3f earthPos = Vector3f(_earthTransformMatrix(0,3),_earthTransformMatrix(1,3),_earthTransformMatrix(2,3));
+  std::cout << earthPos << std::endl;
+  t = Affine3f(_moonTransformMatrix) * Vector3f(0,0,0);
+  Vector3f tMoon = Affine3f(_moonTransformMatrix) * earthPos;
+  moonAffine =  Translation3f(tMoon)
+                *AngleAxisf(0.1, Vector3f(0,1,0))
+                *Translation3f(-tMoon);
+              /*  *Translation3f(t)
+                *AngleAxisf(0.5, Vector3f(0,sin(6.68),0))
+                *Translation3f(-t);*/
+  _moonTransformMatrix = moonAffine.matrix()*_earthTransformMatrix;
+
+
+  // wireframe display
+  color = 2;
+  glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+
   glUniform1f(_shader.getUniformLocation("color"), color);
-  // glUniform2fv(_shader.getUniformLocation("mvtVect"), 1, mvtVect.data());
   glUniformMatrix4fv(_shader.getUniformLocation("viewMatrix"), 1, GL_FALSE, _cam.viewMatrix().data());
   glUniformMatrix4fv(_shader.getUniformLocation("projectionMatrix"), 1, GL_FALSE, projectionMatrix.data());
+
+  // SUN
   glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, _transformMatrix.data());
-  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+  //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
   _mesh.draw(_shader);
 
-  // if (lines > 0) {
-  //   color = 2;
-  //   glUniform1f(_shader.getUniformLocation("color"), color);
-  //   glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-  //   _mesh.draw(_shader);
-  //   _shader.deactivate();
-  // }
+  //EARTH
+  glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, _earthTransformMatrix.data());
+  _mesh.draw(_shader);
+
+  //MOON
+  glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, _moonTransformMatrix.data());
+  _mesh.draw(_shader);
+
   _shader.deactivate();
-  // glViewport(_winWidth/2, 0, _winWidth/2, _winHeight);
-  //
-  // color = 1;
-  // _shader.activate();
-  // glUniform1f(_shader.getUniformLocation("zoom"), zoom);
-  // glUniform1f(_shader.getUniformLocation("color"), color);
-  // glUniform2fv(_shader.getUniformLocation("mvtVect"), 1, mvtVect.data());
-  // glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-  // _mesh.draw(_shader);
-  //
-  // if (lines > 0) {
-  //   color = 2;
-  //   glUniform1f(_shader.getUniformLocation("color"), color);
-  //   glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-  //   _mesh.draw(_shader);
-  //   _shader.deactivate();
-  // }
 
 }
 
@@ -198,7 +222,7 @@ void Viewer::keyPressed(int key, int action, int /*mods*/)
     }
     if (key==GLFW_KEY_L)
     {
-      // lines = -lines;
+      lines = -lines;
     }
 
   }

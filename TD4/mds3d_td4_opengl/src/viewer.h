@@ -37,6 +37,8 @@ private:
     Shader _shader;
     Mesh   _mesh;
     Eigen::Matrix4f _transformMatrix;
+    Eigen::Matrix4f _earthTransformMatrix;
+    Eigen::Matrix4f _moonTransformMatrix;
     float zoom;
     float lines;
     Eigen::Vector2f mvtVect;
