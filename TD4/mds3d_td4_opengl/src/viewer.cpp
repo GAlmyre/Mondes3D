@@ -31,16 +31,17 @@ void Viewer::init(int w, int h){
 
     // earth init
     Affine3f affine;
-    affine = Translation3f(Vector3f(2.5,0,0))*Scaling(Vector3f(0.5,0.5,0.5));
+    affine = AngleAxisf(23.44*M_PI/360, Vector3f(0,0,1))*Translation3f(Vector3f(2.5,0,0))*Scaling(Vector3f(0.5,0.5,0.5));
     _earthTransformMatrix.setIdentity();
     _earthTransformMatrix = _earthTransformMatrix*affine.matrix();
-
+    _earthAxis = Affine3f(AngleAxisf(23.44*M_PI/360., Vector3f(0,0,1)))*Vector3f(0,1,0);
     // moon init
-    affine = Translation3f(Vector3f(1.8,0,0))*Scaling(Vector3f(0.1,0.1,0.1));
+    affine = AngleAxisf(6.68*M_PI/360, Vector3f(0,0,1))*Translation3f(Vector3f(1.8,0,0))*Scaling(Vector3f(0.1,0.1,0.1));
     _moonTransformMatrix.setIdentity();
     _moonTransformMatrix = _moonTransformMatrix*affine.matrix();
+    _moonAxis = Affine3f(AngleAxisf(6.68*M_PI/360., Vector3f(0,0,1)))*Vector3f(0,1,0);
 
-    _cam.lookAt(Vector3f(0,0,-5),Vector3f(0,0,0),Vector3f(0,1,0));
+    _cam.lookAt(Vector3f(0,0,5),Vector3f(0,0,0),Vector3f(0,1,0));
 }
 
 void Viewer::reshape(int w, int h){
@@ -67,23 +68,20 @@ void Viewer::drawScene()
   Vector3f t = Affine3f(_earthTransformMatrix) * Vector3f(0,0,0);
   earthAffine = AngleAxisf(0.02, Vector3f(0,1,0))
                 *Translation3f(t)
-                *AngleAxisf(0.2, Vector3f(0,sin(23.44),0))
+                *AngleAxisf(0.2,_earthAxis)
                 *Translation3f(-t);
   _earthTransformMatrix = earthAffine.matrix()*_earthTransformMatrix;
 
   // moon rotation
   Affine3f moonAffine;
-  Vector3f earthPos = Vector3f(_earthTransformMatrix(0,3),_earthTransformMatrix(1,3),_earthTransformMatrix(2,3));
-  std::cout << earthPos << std::endl;
-  t = Affine3f(_moonTransformMatrix) * Vector3f(0,0,0);
-  Vector3f tMoon = Affine3f(_moonTransformMatrix) * earthPos;
-  moonAffine =  Translation3f(tMoon)
-                *AngleAxisf(0.1, Vector3f(0,1,0))
-                *Translation3f(-tMoon);
+  t = Affine3f(_earthTransformMatrix) * Vector3f(0,0,0);
+  moonAffine =  Translation3f(t)
+                *AngleAxisf(0.03, Vector3f(0,1,0))
+                *Translation3f(-t);
               /*  *Translation3f(t)
                 *AngleAxisf(0.5, Vector3f(0,sin(6.68),0))
                 *Translation3f(-t);*/
-  _moonTransformMatrix = moonAffine.matrix()*_earthTransformMatrix;
+  _moonTransformMatrix = moonAffine.matrix()*_moonTransformMatrix;
 
 
   // wireframe display

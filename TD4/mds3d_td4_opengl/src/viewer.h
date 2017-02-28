@@ -39,6 +39,8 @@ private:
     Eigen::Matrix4f _transformMatrix;
     Eigen::Matrix4f _earthTransformMatrix;
     Eigen::Matrix4f _moonTransformMatrix;
+    Eigen::Vector3f _earthAxis;
+    Eigen::Vector3f _moonAxis;
     float zoom;
     float lines;
     Eigen::Vector2f mvtVect;
