@@ -12,7 +12,6 @@ Camera::Camera()
 void Camera::lookAt(const Vector3f& position, const Vector3f& target, const Vector3f& up)
 {
   mTarget = target;
-  Matrix3f tmp;
   Vector3f z = (position-target).normalized();
   Vector3f x = (z.cross(up)).normalized();
   Vector3f y = (x.cross(z)).normalized();

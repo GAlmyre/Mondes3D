@@ -94,7 +94,7 @@ void Mesh::draw(const Shader &shd)
 
   glDisableVertexAttribArray(vertex_loc);
   if(normal_loc>=0) glDisableVertexAttribArray(normal_loc);
-  if(normal_loc>=0) glDisableVertexAttribArray(color_loc);
+  if(color_loc>=0) glDisableVertexAttribArray(color_loc);
 
   checkError();
 }

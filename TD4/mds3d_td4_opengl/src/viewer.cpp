@@ -20,10 +20,10 @@ Viewer::~Viewer()
 void Viewer::init(int w, int h){
 
     loadShaders();
-    glClearColor(0, 0, 0, 1);
+    glClearColor(0.3, 0.3, 0.3, 1);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
-    if(!_mesh.load(DATA_DIR"/models/sphere.obj")) exit(1);
+    if(!_mesh.load(DATA_DIR"/models/monkey2.obj")) exit(1);
     _mesh.initVBA();
 
     reshape(w,h);
@@ -31,15 +31,15 @@ void Viewer::init(int w, int h){
 
     // earth init
     Affine3f affine;
-    affine = AngleAxisf(23.44*M_PI/360, Vector3f(0,0,1))*Translation3f(Vector3f(2.5,0,0))*Scaling(Vector3f(0.5,0.5,0.5));
+    affine = Translation3f(Vector3f(2.5,0,0))*AngleAxisf(23.44*M_PI/180, Vector3f(0,0,1))*Scaling(Vector3f(0.5,0.5,0.5));
     _earthTransformMatrix.setIdentity();
     _earthTransformMatrix = _earthTransformMatrix*affine.matrix();
-    _earthAxis = Affine3f(AngleAxisf(23.44*M_PI/360., Vector3f(0,0,1)))*Vector3f(0,1,0);
+    _earthAxis = Affine3f(AngleAxisf(23.44*M_PI/180., Vector3f(0,0,1)))*Vector3f(0,1,0);
     // moon init
-    affine = AngleAxisf(6.68*M_PI/360, Vector3f(0,0,1))*Translation3f(Vector3f(1.8,0,0))*Scaling(Vector3f(0.1,0.1,0.1));
+    affine = Translation3f(Vector3f(1.8,0,0))*AngleAxisf(6.68*M_PI/180, Vector3f(0,0,1))*Scaling(Vector3f(0.1,0.1,0.1));
     _moonTransformMatrix.setIdentity();
     _moonTransformMatrix = _moonTransformMatrix*affine.matrix();
-    _moonAxis = Affine3f(AngleAxisf(6.68*M_PI/360., Vector3f(0,0,1)))*Vector3f(0,1,0);
+    _moonAxis = Affine3f(AngleAxisf(6.68*M_PI/180., Vector3f(0,0,1)))*Vector3f(0,1,0);
 
     _cam.lookAt(Vector3f(0,0,5),Vector3f(0,0,0),Vector3f(0,1,0));
 }
@@ -69,39 +69,54 @@ void Viewer::drawScene()
   earthAffine = AngleAxisf(0.02, Vector3f(0,1,0))
                 *Translation3f(t)
                 *AngleAxisf(0.2,_earthAxis)
+                *AngleAxisf(-0.02, Vector3f(0,1,0))
                 *Translation3f(-t);
   _earthTransformMatrix = earthAffine.matrix()*_earthTransformMatrix;
 
   // moon rotation
   Affine3f moonAffine;
-  t = Affine3f(_earthTransformMatrix) * Vector3f(0,0,0);
-  moonAffine =  Translation3f(t)
-                *AngleAxisf(0.03, Vector3f(0,1,0))
-                *Translation3f(-t);
-              /*  *Translation3f(t)
-                *AngleAxisf(0.5, Vector3f(0,sin(6.68),0))
-                *Translation3f(-t);*/
-  _moonTransformMatrix = moonAffine.matrix()*_moonTransformMatrix;
-
+  Vector3f tMoon = Affine3f(_moonTransformMatrix) * Vector3f(0,0,0);
+  //rotation sur elle meme
+  _moonTransformMatrix = Affine3f(Translation3f(tMoon)*AngleAxisf(0.1, _moonAxis)*Translation3f(-tMoon))*_moonTransformMatrix;
+  // correction axe lune
+  _moonAxis = Affine3f(AngleAxisf(0.03, Vector3f(0,1,0)))*_moonAxis;
+  // suivi de la terre
+  _moonTransformMatrix = Affine3f(AngleAxisf(0.02, Vector3f(0,1,0)))*_moonTransformMatrix;
+  //rotation autour de la terre
+  _moonAxis = Affine3f(AngleAxisf(0.03, Vector3f(0,1,0)))*_moonAxis;
+  _moonTransformMatrix = Affine3f(Translation3f(t)*AngleAxisf(0.03, Vector3f(0,1,0))*Translation3f(-t))*_moonTransformMatrix;
 
   // wireframe display
   color = 2;
-  glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
-  glUniform1f(_shader.getUniformLocation("color"), color);
   glUniformMatrix4fv(_shader.getUniformLocation("viewMatrix"), 1, GL_FALSE, _cam.viewMatrix().data());
   glUniformMatrix4fv(_shader.getUniformLocation("projectionMatrix"), 1, GL_FALSE, projectionMatrix.data());
+  glUniform3f(_shader.getUniformLocation("spec_color"),1,1,1);
+  glUniform3f(_shader.getUniformLocation("light_dir"),1,1,1);
+  glUniform1f(_shader.getUniformLocation("specular"), 15);
 
   // SUN
+
+  Matrix3f normMatrix = (_cam.viewMatrix()*_transformMatrix).block(0,0,3,3);
+  normMatrix.inverse();
+  normMatrix.transpose();
+
+  glUniformMatrix3fv(_shader.getUniformLocation("normal_mat"), 1, GL_FALSE, normMatrix.data());
   glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, _transformMatrix.data());
-  //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
   _mesh.draw(_shader);
 
   //EARTH
+  normMatrix = ((_cam.viewMatrix()*_earthTransformMatrix).block(0,0,3,3)).inverse().transpose();
+
+  glUniformMatrix3fv(_shader.getUniformLocation("normal_mat"), 1, GL_FALSE, normMatrix.data());
   glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, _earthTransformMatrix.data());
   _mesh.draw(_shader);
 
   //MOON
+  normMatrix = ((_cam.viewMatrix()*_moonTransformMatrix).block(0,0,3,3)).inverse().transpose();
+
+  glUniformMatrix3fv(_shader.getUniformLocation("normal_mat"), 1, GL_FALSE, normMatrix.data());
   glUniformMatrix4fv(_shader.getUniformLocation("transformMatrix"), 1, GL_FALSE, _moonTransformMatrix.data());
   _mesh.draw(_shader);
 
