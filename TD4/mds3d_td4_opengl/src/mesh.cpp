@@ -22,7 +22,32 @@ bool Mesh::load(const std::string& filename)
 
 void Mesh::computeNormals()
 {
-  // TODO
+  // mettre à zero les normales :
+  for (int i = 0; i < mVertices.size(); i++) {
+    mVertices[i].normal = Vector3f(0,0,0);
+  }
+
+  //pour chaque face, ajouter sa normale aux sommets
+  for (int i = 0; i < mFaces.size(); i++) {
+
+    Vector3f v1 = mVertices[mFaces[i](0)].position;
+    Vector3f v2 = mVertices[mFaces[i](1)].position;
+    Vector3f v3 = mVertices[mFaces[i](2)].position;
+
+    Vector3f v = v2-v1;
+    Vector3f w = v3-v1;
+
+    Vector3f normal = v.cross(w);
+    mVertices[mFaces[i](0)].normal += (normal.norm()/2.)*normal;
+    mVertices[mFaces[i](1)].normal += (normal.norm()/2.)*normal;
+    mVertices[mFaces[i](2)].normal += (normal.norm()/2.)*normal;
+  }
+
+  // normaliser les normales
+  for (int i = 0; i < mVertices.size(); i++) {
+    mVertices[i].normal = (mVertices[i].normal/3.);
+    mVertices[i].normal.normalized();
+  }
 }
 
 void Mesh::initVBA()
@@ -76,7 +101,6 @@ void Mesh::draw(const Shader &shd)
                         0);             // number of bytes to get x_0
   // 3 - activate this stream of vertex attribute
   glEnableVertexAttribArray(vertex_loc);
-
   int normal_loc = shd.getAttribLocation("vtx_normal");
   if(normal_loc>=0)
   {

@@ -19,13 +19,7 @@ out vec3 o_sCol;
 out float o_s;
 
 out vec3 var_color;
-/*
-vec3 blinn(vec3 n, vec3 v, vec3 l, vec3 dCol, vec3 sCol, float s) {
-  vec3 h =(v+l)/2;
-  vec3 color = max(dot(n,l),0)*(dCol+sCol*pow(max(dot(n,h),0),s));
-  return color;
-}
-*/
+
 void main() {
 
   vec3 normal = normal_mat*vtx_normal;
@@ -41,9 +35,8 @@ void main() {
   o_n = normal;
   o_v = normalize(-position.xyz);
   o_l = normalize(light.xyz);
-  o_dCol = vec3(0,0,1);
+  o_dCol = vtx_color;
   o_sCol = spec_color;
   o_s = specular;
 
-  //var_color = blinn(normal, normalize(-position.xyz), normalize(light.xyz), vec3(0,0,1), spec_color, specular);
 }

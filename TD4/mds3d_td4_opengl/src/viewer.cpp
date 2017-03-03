@@ -23,7 +23,8 @@ void Viewer::init(int w, int h){
     glClearColor(0.3, 0.3, 0.3, 1);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
-    if(!_mesh.load(DATA_DIR"/models/monkey2.obj")) exit(1);
+    if(!_mesh.load(DATA_DIR"/models/lemming.off")) exit(1);
+    _mesh.computeNormals();
     _mesh.initVBA();
 
     reshape(w,h);
@@ -89,7 +90,6 @@ void Viewer::drawScene()
   // wireframe display
   color = 2;
   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-
   glUniformMatrix4fv(_shader.getUniformLocation("viewMatrix"), 1, GL_FALSE, _cam.viewMatrix().data());
   glUniformMatrix4fv(_shader.getUniformLocation("projectionMatrix"), 1, GL_FALSE, projectionMatrix.data());
   glUniform3f(_shader.getUniformLocation("spec_color"),1,1,1);
@@ -97,7 +97,6 @@ void Viewer::drawScene()
   glUniform1f(_shader.getUniformLocation("specular"), 15);
 
   // SUN
-
   Matrix3f normMatrix = (_cam.viewMatrix()*_transformMatrix).block(0,0,3,3);
   normMatrix.inverse();
   normMatrix.transpose();
