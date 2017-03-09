@@ -97,7 +97,7 @@ void Mesh::draw(const Shader &shd)
   int texture_loc = shd.getAttribLocation("vtx_texture");
   if(texture_loc>=0)
   {
-    glVertexAttribPointer(texture_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)((2*sizeof(Vector3f)+(sizeof(Vector4f)))));
+    glVertexAttribPointer(texture_loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)((2*sizeof(Vector3f)+(sizeof(Vector4f)))));
     glEnableVertexAttribArray(texture_loc);
   }
 

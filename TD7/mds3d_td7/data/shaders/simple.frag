@@ -8,6 +8,7 @@ in vec2 v_texture;
 uniform vec3 lightDir;
 uniform sampler2D sampler;
 uniform sampler2D clouds_sampler;
+uniform sampler2D night_sampler;
 
 out vec4 out_color;
 
@@ -25,8 +26,12 @@ void main(void) {
   float ambient = 0.4;
   float shininess = 50;
   vec3 spec_color = vec3(1,1,1);
-  vec3 color_earth = texture(sampler, v_texture).xyz;
+  /*vec3 color_earth = texture(sampler, v_texture).xyz;
   vec3 color_clouds = texture(clouds_sampler, v_texture).xyz;
+  vec3 color_night = texture(night_sampler, v_texture).xyz;
   vec3 color = mix(color_clouds, color_earth,0.5);
-  out_color = vec4(ambient * color + blinn(normalize(v_normal),normalize(v_view), lightDir, color, spec_color, shininess),1.0);
+  color = mix(color_night, color,max(0,dot(normalize(v_normal),lightDir)));
+*/
+  out_color = texture(sampler, v_texture);
+  //out_color = vec4(ambient * color + blinn(normalize(v_normal),normalize(v_view), lightDir, color, spec_color, shininess),1.0);
 }

@@ -38,6 +38,12 @@ private:
 
     GLuint _tex_2d;
     GLuint _tex_2d_clouds;
+    GLuint _tex_2d_night;
+    GLuint _tex_2d_board;
+    GLuint _texID1;
+    GLuint _samplerId;
+    GLenum _minFilter = GL_NEAREST;
+    GLenum _magFilter = GL_NEAREST;
 
     float _theta;
     bool _rotate;
