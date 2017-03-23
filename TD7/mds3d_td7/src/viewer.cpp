@@ -33,7 +33,7 @@ void Viewer::init(int w, int h){
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
     loadShaders();
-    if(!_mesh.load(DATA_DIR"/models/cow.obj")) exit(1);
+    if(!_mesh.load(DATA_DIR"/models/earth2.obj")) exit(1);
     _mesh.initVBA();
     _tex_2d = SOIL_load_OGL_texture
     (
@@ -59,6 +59,20 @@ void Viewer::init(int w, int h){
     _tex_2d_board = SOIL_load_OGL_texture
     (
         DATA_DIR"/textures/checkerboard.png",
+        SOIL_LOAD_AUTO,
+        SOIL_CREATE_NEW_ID,
+        SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
+    );
+    _normal_map = SOIL_load_OGL_texture
+    (
+        DATA_DIR"/textures/earth_normal.jpg",
+        SOIL_LOAD_AUTO,
+        SOIL_CREATE_NEW_ID,
+        SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
+    );
+    _tex_diffuse = SOIL_load_OGL_texture
+    (
+        DATA_DIR"/textures/diffuse.png",
         SOIL_LOAD_AUTO,
         SOIL_CREATE_NEW_ID,
         SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
@@ -115,7 +129,7 @@ void Viewer::drawScene()
 
     _shader.activate();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,_texID1);
+    glBindTexture(GL_TEXTURE_2D,_tex_2d);
     glBindSampler(0, _samplerId);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D,_tex_2d_clouds);
@@ -123,15 +137,19 @@ void Viewer::drawScene()
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D,_tex_2d_night);
     glBindSampler(2, _samplerId);
-
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D,_normal_map);
+    glBindSampler(3, _samplerId);
 
     glUniformMatrix4fv(_shader.getUniformLocation("view_mat"),1,GL_FALSE,_cam.viewMatrix().data());
     glUniformMatrix4fv(_shader.getUniformLocation("proj_mat"),1,GL_FALSE,_cam.projectionMatrix().data());
     glUniform1i(_shader.getUniformLocation("sampler"),0);
     glUniform1i(_shader.getUniformLocation("clouds_sampler"),1);
     glUniform1i(_shader.getUniformLocation("night_sampler"),2);
+    glUniform1i(_shader.getUniformLocation("normal_map"),3);
 
     Affine3f M(AngleAxisf(_theta,Vector3f(0,1,0)));
+
 
     glUniformMatrix4fv(_shader.getUniformLocation("obj_mat"),1,GL_FALSE,M.matrix().data());
 

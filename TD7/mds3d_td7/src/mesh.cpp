@@ -22,11 +22,72 @@ bool Mesh::load(const std::string& filename)
 
 void Mesh::computeNormals()
 {
-  // pass 1: set the normal to 0
+  //on met les normales de chaque sommet à 0
+  for(std::vector<Vertex>::iterator it = mVertices.begin();it != mVertices.end();++it)
+  {
+      (*it).normal = Vector3f::Zero();
+      (*it).tangent = Vector3f::Zero();
+      (*it).bitangent = Vector3f::Zero();
+  }
+  //on parcourt les faces
+  for(std::vector<Vector3i>::iterator it = mFaces.begin(); it != mFaces.end();++it)
+  {
+      Vector3i v = (*it);
+      Vertex v0 = mVertices[v(0)];
+      Vertex v1 = mVertices[v(1)];
+      Vertex v2 = mVertices[v(2)];
 
-  // pass 2: compute face normals and accumulate
+      Vector3f q1 = v1.position-v0.position;
+      Vector3f q2 = v2.position-v0.position;
 
-  // pass 3: normalize
+      float s1 = v1.texcoord[0]-v0.texcoord[0];
+      float s2 = v2.texcoord[0]-v0.texcoord[0];
+
+      float t1 = v1.texcoord[1]-v0.texcoord[1];
+      float t2 = v2.texcoord[1]-v0.texcoord[1];
+
+      MatrixXf q1q2(3,2);
+      q1q2 << q1(0),q2(0),
+              q1(1),q2(1),
+              q1(2),q2(2);
+
+      Matrix2f m;
+      m <<  s1,s2,
+            t1,t2;
+
+      MatrixXf TB(2,3);
+      TB = q1q2*m.inverse();
+
+      Vector3f T = TB.block<3,1>(0,0);
+      Vector3f B = TB.block<3,1>(0,1);
+
+      Vector3f n = q1.cross(q2);//.normalized();
+
+      v0.normal += n;
+      v1.normal += n;
+      v2.normal += n;
+
+      v0.tangent += T;
+      v1.tangent += T;
+      v2.tangent += T;
+
+      v0.bitangent += B;
+      v1.bitangent += B;
+      v2.bitangent += B;
+
+      mVertices[v(0)] = v0;
+      mVertices[v(1)] = v1;
+      mVertices[v(2)] = v2;
+  }
+  for(std::vector<Vertex>::iterator it = mVertices.begin();it != mVertices.end();++it)
+  {
+      (*it).tangent = (*it).tangent - ((*it).normal.dot((*it).tangent))*(*it).normal;
+      (*it).bitangent = (*it).bitangent - ((*it).normal.dot( (*it).bitangent))*(*it).normal - ((*it).tangent.dot((*it).bitangent)) * (*it).tangent/(*it).tangent.norm();
+
+      (*it).normal = (*it).normal.normalized();
+      (*it).tangent = (*it).tangent.normalized();
+      (*it).bitangent = (*it).bitangent.normalized();
+  }
 }
 
 void Mesh::initVBA()
@@ -100,6 +161,18 @@ void Mesh::draw(const Shader &shd)
     glVertexAttribPointer(texture_loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)((2*sizeof(Vector3f)+(sizeof(Vector4f)))));
     glEnableVertexAttribArray(texture_loc);
   }
+  int tangent_loc = shd.getAttribLocation("vtx_tangent");
+  if(tangent_loc>=0)
+  {
+    glVertexAttribPointer(tangent_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(Vector3f)+sizeof(Vector4f)+sizeof(Vector2f)));
+    glEnableVertexAttribArray(tangent_loc);
+  }
+  int bitangent_loc = shd.getAttribLocation("vtx_bitangent");
+  if(bitangent_loc>=0)
+  {
+    glVertexAttribPointer(bitangent_loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3*sizeof(Vector3f)+sizeof(Vector4f)+sizeof(Vector2f)));
+    glEnableVertexAttribArray(bitangent_loc);
+  }
 
   // send the geometry
   glDrawElements(GL_TRIANGLES, 3*mFaces.size(), GL_UNSIGNED_INT, 0);
@@ -110,6 +183,8 @@ void Mesh::draw(const Shader &shd)
   if(normal_loc>=0) glDisableVertexAttribArray(normal_loc);
   if(color_loc>=0)  glDisableVertexAttribArray(color_loc);
   if(texture_loc>=0)  glDisableVertexAttribArray(texture_loc);
+  if(tangent_loc>=0)  glDisableVertexAttribArray(tangent_loc);
+  if(bitangent_loc>=0)  glDisableVertexAttribArray(bitangent_loc);
   checkError();
 }
 

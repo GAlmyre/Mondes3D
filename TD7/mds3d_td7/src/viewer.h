@@ -36,6 +36,8 @@ private:
     Shader _shader;
     Mesh   _mesh;
 
+    GLuint _tex_diffuse;
+    GLuint _normal_map;
     GLuint _tex_2d;
     GLuint _tex_2d_clouds;
     GLuint _tex_2d_night;

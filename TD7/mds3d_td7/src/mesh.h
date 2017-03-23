@@ -19,7 +19,7 @@ class Mesh
     typedef Eigen::Matrix<float,4,1,Eigen::DontAlign> Vector4f;
     typedef Eigen::Vector3i Vector3i;
 public:
-  
+
     Mesh() {}
 
     /** Destructor */
@@ -41,26 +41,28 @@ protected:
     /** Loads a triangular mesh in the OFF format */
     bool loadOFF(const std::string& filename);
     bool loadOBJ(const std::string& filename);
-  
+
     /** Represents a vertex of the mesh */
     struct Vertex
     {
       Vertex(const Vector3f& pos = Vector3f::Zero(), const Vector3f& n = Vector3f::Zero())
         : position(pos), normal(n), color(Vector4f(0.6,0.6,0.6,1.0)), texcoord(Vector2f::Zero())
       {}
-      
+
       Vector3f position;
       Vector3f normal;
       Vector4f color;
       Vector2f texcoord;
+      Vector3f tangent;
+      Vector3f bitangent;
     };
 
     /** The list of vertices */
     std::vector<Vertex> mVertices;
-    
+
     /** The list of face indices */
     std::vector<Vector3i> mFaces;
-    
+
     unsigned int mVertexArrayId;
     unsigned int mVertexBufferId; ///< the id of the BufferObject storing the vertex attributes
     unsigned int mIndexBufferId;  ///< the id of the BufferObject storing the faces indices
