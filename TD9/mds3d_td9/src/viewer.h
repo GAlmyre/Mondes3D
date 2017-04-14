@@ -31,6 +31,7 @@ public:
 
 private:
     int _winWidth, _winHeight;
+    float _torsion;
 
     Camera _cam;
     Shader _shader;

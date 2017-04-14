@@ -5,7 +5,7 @@
 using namespace Eigen;
 
 Viewer::Viewer()
-  : _winWidth(0), _winHeight(0), _theta(0), _rotate(false)
+  : _winWidth(0), _winHeight(0), _theta(0), _rotate(false), _torsion(0)
 {
 }
 
@@ -71,12 +71,13 @@ void Viewer::drawScene()
     glUniformMatrix3fv(_shader.getUniformLocation("normal_mat"),1,GL_FALSE,matN.data());
 
     Vector3f lightDir = Vector3f(1,0,1).normalized();
-    lightDir = (matLocal2Cam.topLeftCorner<3,3>() * lightDir).normalized();
+    lightDir = (_cam.viewMatrix().inverse().transpose().topLeftCorner<3,3>() * lightDir).normalized();
     glUniform3fv(_shader.getUniformLocation("lightDir"),1,lightDir.data());
 
     glBindTexture(GL_TEXTURE_2D, _texid);
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_shader.getUniformLocation("colormap"), 0);
+    glUniform1f(_shader.getUniformLocation("torsion"), _torsion);
 
     _mesh.draw(_shader);
 
@@ -161,9 +162,11 @@ void Viewer::keyPressed(int key, int action, int /*mods*/)
   {
     if (key==GLFW_KEY_UP)
     {
+      _torsion+=0.1;
     }
     else if (key==GLFW_KEY_DOWN)
     {
+      _torsion-=0.1;
     }
     else if (key==GLFW_KEY_LEFT)
     {
